@@ -16,18 +16,7 @@ namespace FullStack.WebAPI.Controllers
     {
         private ModelFactory _modelFactory;
         private ApplicationUserManager _AppUserManager = null;
-
-        protected ApplicationUserManager AppUserManager
-        {
-            get
-            {
-                return _AppUserManager ?? Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
-            }
-        }
-
-        public BaseApiController()
-        {
-        }
+        private ApplicationRoleManager _AppRoleManager = null;
 
         protected ModelFactory TheModelFactory
         {
@@ -39,6 +28,34 @@ namespace FullStack.WebAPI.Controllers
                 }
                 return _modelFactory;
             }
+        }
+
+        protected ApplicationUserManager AppUserManager
+        {
+            get
+            {
+                if (_AppUserManager == null)
+                {
+                    _AppUserManager = Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                }
+                return _AppUserManager;
+            }
+        }
+
+        protected ApplicationRoleManager AppRoleManager
+        {
+            get
+            {
+                if (_AppRoleManager == null)
+                {
+                    _AppRoleManager = Request.GetOwinContext().GetUserManager<ApplicationRoleManager>();
+                }
+                return _AppRoleManager;
+            }
+        }
+
+        public BaseApiController()
+        {
         }
 
         protected IHttpActionResult GetErrorResult(IdentityResult result)

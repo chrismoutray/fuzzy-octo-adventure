@@ -31,11 +31,16 @@ namespace FullStack.WebAPI.Providers
 
             var userManager = context.OwinContext.GetUserManager<ApplicationUserManager>();
 
+            ApplicationUser user1 = await userManager.FindByNameAsync(context.UserName);
+
             ApplicationUser user = await userManager.FindAsync(context.UserName, context.Password);
 
             if (user == null)
             {
-                context.SetError("invalid_grant", "The user name or password is incorrect.");
+                if (user1 != null)
+                    context.SetError("invalid_grant", "The user was found but the password was incorrect.");
+                else
+                    context.SetError("invalid_grant", "The user name or password is incorrect.");
                 return;
             }
 

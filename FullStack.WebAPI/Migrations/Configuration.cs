@@ -21,10 +21,12 @@ namespace FullStack.WebAPI.Migrations
 
             var manager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(new ApplicationDbContext()));
 
+            var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(new ApplicationDbContext()));
+ 
             var user = new ApplicationUser()
             {
-                UserName = "admin",
-                Email = "admin@fullstack.webapi",
+                UserName = "SuperAdmin",
+                Email = "SuperAdmin@FullStack.WebAPI",
                 EmailConfirmed = true,
                 FirstName = "Super",
                 LastName = "Admin",
@@ -32,7 +34,18 @@ namespace FullStack.WebAPI.Migrations
                 JoinDate = DateTime.Now
             };
 
-            manager.Create(user, "passs");
+            manager.Create(user, "Password99!");
+
+            if (roleManager.Roles.Count() == 0)
+            {
+                roleManager.Create(new IdentityRole { Name = "SuperAdmin" });
+                roleManager.Create(new IdentityRole { Name = "Admin" });
+                roleManager.Create(new IdentityRole { Name = "User" });
+            }
+
+            var adminUser = manager.FindByName("SuperAdmin");
+
+            manager.AddToRoles(adminUser.Id, new string[] { "SuperAdmin", "Admin" });
         }
     }
 }
