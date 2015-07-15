@@ -191,3 +191,4 @@ ModelManifest.xml
 /FullStack.API/connectionStrings.config
 /FullStack.WebAPI/appSettings.config
 /FullStack.WebAPI/connectionStrings.config
+/stories
