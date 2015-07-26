@@ -192,3 +192,4 @@ ModelManifest.xml
 /FullStack.WebAPI/appSettings.config
 /FullStack.WebAPI/connectionStrings.config
 /stories
+.idea/
