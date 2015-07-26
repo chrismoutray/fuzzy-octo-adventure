@@ -54,10 +54,18 @@
         </div>
         <div class="collapse navbar-collapse" collapse="menuCollapsed">
           <ul class="nav navbar-nav">
-            <li ui-sref-active="active">
+
+              <li ui-sref-active="active">
+                  <a href ui-sref="users">
+                      <i class="fa fa-users"></i>
+                      Users
+                  </a>
+              </li>
+
+              <li ui-sref-active="active">
               <a href ui-sref="home">
                 <i class="fa fa-home"></i>
-                Home
+                Home x
               </a>
             </li>
             <li ui-sref-active="active">
@@ -84,6 +92,12 @@
                 Support
               </a>
             </li>
+            <li>
+              <a href ng-click="logout()">
+                <i class="fa fa-logout"></i>
+                Logout {{blap}}
+              </a>
+            </li>
           </ul>
         </div>
       </div>
@@ -100,19 +114,19 @@
             <li><a target="_blank" href="http://linkedin.com/in/joshdmiller"><i class="fa fa-linkedin-sign"></i></a></li>
             <li><a target="_blank" href="http://github.com/ngbp/ngbp"><i class="fa fa-github-sign"></i></a></li>
           </ul>
-          
+
 
           <p>
-            (c) 2013 <a href="http://www.joshdavidmiller.com">Josh David Miller</a>. 
+            (c) 2013 <a href="http://www.joshdavidmiller.com">Josh David Miller</a>.
             <a href="http://github.com/ngbp/ngbp/fork_select">Fork this</a>
             to kickstart your next project.
             <br />
             ngbp is based on
             <a href="http://www.angularjs.org">AngularJS</a>,
-            <a href="http://getbootstrap.com">Bootstrap</a>, 
+            <a href="http://getbootstrap.com">Bootstrap</a>,
             <a href="http://angular-ui.github.com/bootstrap">UI Bootstrap</a>,
-            and 
-            <a href="http://fortawesome.github.com/Font-Awesome">Font Awesome</a>.        
+            and
+            <a href="http://fortawesome.github.com/Font-Awesome">Font Awesome</a>.
           </p>
         </div>
       </div>
