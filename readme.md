@@ -24,9 +24,9 @@ Command Prompt (runas Admin).
 > npm -g install karma
 ```
 
-> The karam package may fail to install if it needs python to do a **node-gyp rebuild**
-> Install python v2 into `C:\Program Files\Python27` https://www.python.org/getit/windows/
-> the try the following
+> The karam package may fail to install if it needs python to do a **node-gyp rebuild**.
+> So install python v2 into `C:\Program Files\Python27` https://www.python.org/getit/windows/.
+> Then try the following
 
 ```
 > set PYTHON=C:\Program Files\Python27\python.exe
