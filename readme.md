@@ -15,9 +15,26 @@ Build with VS2013 Community Edition.
 ## FullStack.Web
 
 Command Prompt (runas Admin).
+
+```
+> npm -g install grunt-cli bower
+```
+
+```
+> npm -g install karma
+```
+
+> The karam package may fail to install if it needs python to do a **node-gyp rebuild**
+> Install python v2 into `C:\Program Files\Python27` https://www.python.org/getit/windows/
+> the try the following
+
+```
+> set PYTHON=C:\Program Files\Python27\python.exe
+> npm -g install karma
+```
+
 ```
 > cd FullStack.Web
-> npm -g install grunt-cli karma bower
 > npm install
 > bower install
 > grunt build
