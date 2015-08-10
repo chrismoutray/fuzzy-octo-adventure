@@ -1,5 +1,11 @@
 # fuzzy-octo-adventure
 
+## TODO 
+
+https://github.com/ngbp/ngbp/issues/165#issuecomment-25201730
+then move to local.domain and staging.domain and www.domain
+then move to local-api.domain and staging-api.domain and api.domain
+
 ## Setup
 
 Configure IIS through setup script; which creates sites and app-pools in IIS for web and api. Also creates entries in host file for endpoints www.fullstack.co.uk (AngularJS site) and api.fullstack.co.uk (ASP.NET C# WebAPI site).
