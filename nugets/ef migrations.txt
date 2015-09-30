@@ -1,0 +1,34 @@
+
+# add a new migration
+Add-Migration <migration_name>
+
+# update the database - apply all migrations
+Update-Database
+
+
+# enable migrations
+Enable-Migrations
+
+# override existing migration
+Add-Migration <migration_name> -Force
+
+# update to a specific
+Update-Database -TargetMigration:”MigrationName”
+
+# rollback all migrations
+Update-Database -TargetMigration:0
+
+# rollback to specific
+Update-Database -TargetMigration:”MigrationName”
+
+# sql script
+Update-Database -Script -SourceMigration: $InitialDatabase
+
+# sql script - specific migration
+Update-Database -Script -SourceMigration: $InitialDatabase -TargetMigration: <migration_name>
+OR
+Update-Database -Script -SourceMigration: <migration_name> -TargetMigration: <migration_name>
+
+http://kbiapps.com/entity-framework-code-first-migration-cheat-sheet/
+
+http://martinnormark.com/entity-framework-migrations-cheat-sheet/

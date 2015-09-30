@@ -1,7 +1,29 @@
 <div>
-    Length: {{vm.users.length}}
 
-    <div data-ng-repeat="user in vm.users">
-        {{user.fullName}} {{user.userName}}
+    <div class="table-responsive">
+        <table id="myTable" class="table table-hover">
+            <caption>Length: {{vm.users.length}}</caption>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Join Date</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr data-ng-repeat="user in vm.users track by user.id">
+                <td>{{user.fullName}}</td>
+                <td>{{user.userName}}</td>
+                <td>{{user.emailConfirmed ? (user.joinDate|date:'dd MMM y') : 'Awaiting Confirmation'}}</td>
+                <td class="dropdown">
+                    <!--<a class="btn btn-default actionButton" data-toggle="dropdown" href="#"> Action </a>-->
+                    <a class="btn btn-default" href="" ng-click="deleteUser(user)"> Delete </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
     </div>
+
 </div>

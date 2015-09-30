@@ -13,7 +13,7 @@ namespace FullStack.WebAPI.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201507051109576_InitialCreate"; }
+            get { return "201508261803089_InitialCreate"; }
         }
         
         string IMigrationMetadata.Source

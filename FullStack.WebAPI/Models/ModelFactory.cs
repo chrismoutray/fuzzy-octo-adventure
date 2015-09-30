@@ -31,7 +31,6 @@ namespace FullStack.WebAPI.Models
                 FullName = string.Format("{0} {1}", appUser.FirstName, appUser.LastName),
                 Email = appUser.Email,
                 EmailConfirmed = appUser.EmailConfirmed,
-                Level = appUser.Level,
                 JoinDate = appUser.JoinDate,
                 Roles = _AppUserManager.GetRolesAsync(appUser.Id).Result,
                 Claims = _AppUserManager.GetClaimsAsync(appUser.Id).Result
@@ -57,7 +56,6 @@ namespace FullStack.WebAPI.Models
         public string FullName { get; set; }
         public string Email { get; set; }
         public bool EmailConfirmed { get; set; }
-        public int Level { get; set; }
         public DateTime JoinDate { get; set; }
         public IList<string> Roles { get; set; }
         public IList<Claim> Claims { get; set; }

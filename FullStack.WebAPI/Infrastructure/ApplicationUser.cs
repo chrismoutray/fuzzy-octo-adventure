@@ -21,7 +21,8 @@ namespace FullStack.WebAPI.Infrastructure
         public string LastName { get; set; }
 
         [Required]
-        public byte Level { get; set; }
+        [MaxLength(100)]
+        public string DisplayName { get; set; }
 
         [Required]
         public DateTime JoinDate { get; set; }

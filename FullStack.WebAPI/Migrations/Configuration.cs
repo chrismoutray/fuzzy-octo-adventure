@@ -30,7 +30,7 @@ namespace FullStack.WebAPI.Migrations
                 EmailConfirmed = true,
                 FirstName = "Super",
                 LastName = "Admin",
-                Level = 1,
+                DisplayName = "Super Admin",
                 JoinDate = DateTime.Now
             };
 

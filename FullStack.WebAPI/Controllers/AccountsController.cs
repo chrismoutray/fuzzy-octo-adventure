@@ -13,6 +13,152 @@ namespace FullStack.WebAPI.Controllers
     [RoutePrefix("api/accounts")]
     public class AccountsController : BaseApiController
     {
+        [AllowAnonymous]
+        [Route("signup")]
+        [HttpPost]
+        public async Task<IHttpActionResult> SignUp(SignUpUserBindingModel signupUserModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = new ApplicationUser()
+            {
+                UserName = signupUserModel.Email,
+                Email = signupUserModel.Email,
+                FirstName = signupUserModel.FirstName,
+                LastName = signupUserModel.LastName,
+                DisplayName = signupUserModel.DisplayName,
+                JoinDate = DateTime.Now.Date,
+            };
+
+            IdentityResult createUserResult = await this.AppUserManager.CreateAsync(user, signupUserModel.Password);
+
+            if (!createUserResult.Succeeded)
+            {
+                return GetErrorResult(createUserResult);
+            }
+
+            string code = await this.AppUserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+
+            Uri confirmSignUpRoute = new Uri(Url.Link("ConfirmSignUpRoute", new { userId = user.Id, code = code }));
+
+            //string confirmSignUpWebAppUrl = string.Format("http://www.fullstack.com/confirm-signup{0}", confirmSignUpRoute.Query);
+            string confirmSignUpWebAppUrl = string.Format("http://api.fullstack.co.uk/api/accounts/confirm-signup{0}", confirmSignUpRoute.Query);
+
+            //string message = string.Format("{ type: 'AccountSignUp', data: { confirmSignUpWebAppUrl: '{0}' } }", confirmSignUpWebAppUrl); 
+            await this.AppUserManager.SendEmailAsync(user.Id, "Account SignUp", "Please confirm your account by clicking <a href=\"" + confirmSignUpWebAppUrl + "\">here</a>");
+
+            Uri locationHeader = new Uri(Url.Link("GetUserById", new { id = user.Id }));
+            
+            return Created(locationHeader, TheModelFactory.Create(user));
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("confirm-signup", Name = "ConfirmSignUpRoute")]
+        public async Task<IHttpActionResult> ConfirmSignUp(string userId = "", string code = "")
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
+            {
+                ModelState.AddModelError("", "User Id and Code are required");
+                return BadRequest(ModelState);
+            }
+
+            IdentityResult confirmEmailResult = await this.AppUserManager.ConfirmEmailAsync(userId, code);
+
+            if (!confirmEmailResult.Succeeded)
+            {
+                return GetErrorResult(confirmEmailResult);
+            }
+
+            IdentityResult addToRolesResult = await this.AppUserManager.AddToRolesAsync(userId, new string[] { "User" });
+
+            if (!addToRolesResult.Succeeded)
+            {
+                ModelState.AddModelError("", "Failed to add user roles");
+                return BadRequest(ModelState);
+            }
+            
+            //Uri locationHeader = new Uri(Url.Link("GetUserById", new { id = user.Id }));
+
+            //return Created(locationHeader, TheModelFactory.Create(user));
+
+            return Ok();
+        }
+
+        [Authorize]
+        [Route("invite")]
+        [HttpPost]
+        public async Task<IHttpActionResult> InviteUser(InviteUserBindingModel inviteUserModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = new ApplicationUser()
+            {
+                UserName = inviteUserModel.Email,
+                Email = inviteUserModel.Email,
+                FirstName = inviteUserModel.FirstName,
+                LastName = inviteUserModel.LastName,
+                DisplayName = inviteUserModel.DisplayName,
+                JoinDate = DateTime.Now.Date,
+            };
+
+            IdentityResult createUserResult = await this.AppUserManager.CreateAsync(user);
+
+            if (!createUserResult.Succeeded)
+            {
+                return GetErrorResult(createUserResult);
+            }
+
+            string code = await this.AppUserManager.GenerateEmailConfirmationTokenAsync(user.Id);
+
+            var callbackUrl = new Uri(Url.Link("ConfirmInviteRoute", new { userId = user.Id, code = code }));
+
+            await this.AppUserManager.SendEmailAsync(user.Id, "Account Invite", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
+
+            Uri locationHeader = new Uri(Url.Link("GetUserById", new { id = user.Id }));
+
+            return Created(locationHeader, TheModelFactory.Create(user));
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("confirm-invite", Name = "ConfirmInviteRoute")]
+        public async Task<IHttpActionResult> ConfirmInvite(string userId = "", string code = "")
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
+            {
+                ModelState.AddModelError("", "User Id and Code are required");
+                return BadRequest(ModelState);
+            }
+
+            IdentityResult confirmEmailResult = await this.AppUserManager.ConfirmEmailAsync(userId, code);
+
+            if (!confirmEmailResult.Succeeded)
+            {
+                return GetErrorResult(confirmEmailResult);
+            }
+
+            IdentityResult addToRolesResult = await this.AppUserManager.AddToRolesAsync(userId, new string[] { "User" });
+
+            if (!addToRolesResult.Succeeded)
+            {
+                ModelState.AddModelError("", "Failed to add user roles");
+                return BadRequest(ModelState);
+            }
+
+            //Uri locationHeader = new Uri(Url.Link("GetUserById", new { id = user.Id }));
+
+            //return Created(locationHeader, TheModelFactory.Create(user));
+
+            return Ok();
+        }
+
         [Authorize(Roles = "Admin")]
         [Route("users")]
         public IHttpActionResult GetUsers()
@@ -50,72 +196,6 @@ namespace FullStack.WebAPI.Controllers
 
         }
 
-        [AllowAnonymous]
-        [Route("create")]
-        public async Task<IHttpActionResult> CreateUser(CreateUserBindingModel createUserModel)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var user = new ApplicationUser()
-            {
-                UserName = createUserModel.Username,
-                Email = createUserModel.Email,
-                FirstName = createUserModel.FirstName,
-                LastName = createUserModel.LastName,
-                Level = 3,
-                JoinDate = DateTime.Now.Date,
-            };
-
-            IdentityResult addUserResult = await this.AppUserManager.CreateAsync(user, createUserModel.Password);
-
-            if (!addUserResult.Succeeded)
-            {
-                return GetErrorResult(addUserResult);
-            }
-
-            string code = await this.AppUserManager.GenerateEmailConfirmationTokenAsync(user.Id);
-
-            var callbackUrl = new Uri(Url.Link("ConfirmEmailRoute", new { userId = user.Id, code = code }));
-
-            await this.AppUserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-
-            Uri locationHeader = new Uri(Url.Link("GetUserById", new { id = user.Id }));
-
-            return Created(locationHeader, TheModelFactory.Create(user));
-        }
-
-        [AllowAnonymous]
-        [HttpGet]
-        [Route("confirmEmail", Name = "ConfirmEmailRoute")]
-        public async Task<IHttpActionResult> ConfirmEmail(string userId = "", string code = "")
-        {
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
-            {
-                ModelState.AddModelError("", "User Id and Code are required");
-                return BadRequest(ModelState);
-            }
-
-            IdentityResult confirmEmailResult = await this.AppUserManager.ConfirmEmailAsync(userId, code);
-
-            if (!confirmEmailResult.Succeeded)
-            {
-                return GetErrorResult(confirmEmailResult);
-            }
-
-            IdentityResult addToRolesResult = await this.AppUserManager.AddToRolesAsync(userId, new string[] { "User" });
-
-            if (!addToRolesResult.Succeeded)
-            {
-                ModelState.AddModelError("", "Failed to add user roles");
-                return BadRequest(ModelState);
-            }
-
-            return Ok();
-        }
-
         [Authorize]
         [Route("changePassword")]
         public async Task<IHttpActionResult> ChangePassword(ChangePasswordBindingModel model)
@@ -137,6 +217,7 @@ namespace FullStack.WebAPI.Controllers
 
         [Authorize(Roles = "Admin")]
         [Route("user/{id:guid}")]
+        //[HttpDelete]
         public async Task<IHttpActionResult> DeleteUser(string id)
         {
 

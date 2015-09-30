@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Validation;
 using System.Linq;
+using System.Text;
 using System.Web;
 using Microsoft.AspNet.Identity.EntityFramework;
 
@@ -18,6 +20,6 @@ namespace FullStack.WebAPI.Infrastructure
         public static ApplicationDbContext Create()
         {
             return new ApplicationDbContext();
-        } 
+        }
     }
 }

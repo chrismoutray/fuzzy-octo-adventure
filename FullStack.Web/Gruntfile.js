@@ -300,7 +300,9 @@ module.exports = function ( grunt ) {
         noarg: true,
         sub: true,
         boss: true,
-        eqnull: true
+        eqnull: true,
+        debug: true,
+        es5: true
       },
       globals: {}
     },

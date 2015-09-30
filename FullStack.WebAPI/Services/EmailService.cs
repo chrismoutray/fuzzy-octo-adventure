@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Hosting;
 using Microsoft.AspNet.Identity;
 
 namespace FullStack.WebAPI.Services
@@ -23,9 +24,28 @@ namespace FullStack.WebAPI.Services
                 email.To.Add(message.Destination);
                 email.From = new MailAddress(applicationEmailAddress, applicationEmailDisplayName);
                 email.Subject = message.Subject;
-                email.Body = message.Body;
                 email.IsBodyHtml = true;
-                email.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(message.Body, Encoding.UTF8, MediaTypeNames.Text.Html));
+        
+                // plain text view
+                string plainTextBody = message.Body;
+                
+                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString(plainTextBody, null, MediaTypeNames.Text.Plain);
+                
+                email.AlternateViews.Add(plainTextView);
+
+                
+                // html body view
+                string htmlBody = message.Body + "<br><br><img src=\"cid:logo\">";
+
+                AlternateView htmlview = AlternateView.CreateAlternateViewFromString(htmlBody, null, MediaTypeNames.Text.Html);
+
+                LinkedResource imageResourceEs = new LinkedResource(HostingEnvironment.MapPath("~/Assets/logo.jpg"), MediaTypeNames.Image.Jpeg);
+                imageResourceEs.ContentId = "logo";
+
+                htmlview.LinkedResources.Add(imageResourceEs);
+
+                email.AlternateViews.Add(htmlview);
+                
 
                 using (var smtp = new SmtpClient())
                 {

@@ -5,9 +5,15 @@ angular.module('ngBoilerplate', [
     'templates-common',
     'ngBoilerplate.home',
     'ngBoilerplate.about',
+    'ngBoilerplate.signup',
     'ngBoilerplate.login',
     'ngBoilerplate.users'
 ])
+
+    .constant('CONSTANTS', {
+        BASE_API_URL: 'http://api.fullstack.co.uk/'
+        //BASE_API_URL: 'http://localhost:49566/'
+    })
 
     .config(function myAppConfig($stateProvider, $urlRouterProvider, $httpProvider) {
         $httpProvider.interceptors.push('authInterceptorService');
