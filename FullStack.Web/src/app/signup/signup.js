@@ -17,14 +17,41 @@ angular.module('ngBoilerplate.signup', [
                 data: {pageTitle: 'Sign Up'}
             })
             .state('confirm-signup', {
-                url: '/confirm-signup',
+                url: '/confirm-signup?user&token',
                 views: {
                     "main": {
                         controller: 'ConfirmSignUpCtrl',
                         templateUrl: 'signup/confirm-signup.tpl.html'
                     }
                 },
-                data: {pageTitle: 'Confirm Sign Up'}
+                data: {pageTitle: 'Confirm Sign Up'},
+                resolve: {
+                    isConfirmSuccessful: ['$stateParams', '$location', 'authService', function ($stateParams, $location, authService) {
+
+                        if ($stateParams.user === undefined || $stateParams.token === undefined)
+                            return false;
+
+                        var vm = {
+                            username: $stateParams.user,
+                            password: $stateParams.token
+                        };
+
+                        authService
+                            .login(vm)
+                            .then(function (response) {
+                                $location.path('/confirm-details');
+
+                                // todo remove username and token from uri
+
+                                // now we've logged in started after-signup wizard
+                                // in order to confirm and complete user details and guide them through any initial app settings
+
+                            },
+                            function (err) {
+                                $scope.message = err.error_description;
+                            });
+                    }]
+                }
             })
         ;
     })

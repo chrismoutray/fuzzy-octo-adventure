@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http;
 using FullStack.WebAPI.Infrastructure;
 using FullStack.WebAPI.Models;
@@ -14,8 +12,8 @@ namespace FullStack.WebAPI.Controllers
     public class AccountsController : BaseApiController
     {
         [AllowAnonymous]
-        [Route("signup")]
         [HttpPost]
+        [Route("signup")]
         public async Task<IHttpActionResult> SignUp(SignUpUserBindingModel signupUserModel)
         {
             if (!ModelState.IsValid)
@@ -44,14 +42,14 @@ namespace FullStack.WebAPI.Controllers
 
             Uri confirmSignUpRoute = new Uri(Url.Link("ConfirmSignUpRoute", new { userId = user.Id, code = code }));
 
-            //string confirmSignUpWebAppUrl = string.Format("http://www.fullstack.com/confirm-signup{0}", confirmSignUpRoute.Query);
-            string confirmSignUpWebAppUrl = string.Format("http://api.fullstack.co.uk/api/accounts/confirm-signup{0}", confirmSignUpRoute.Query);
+            //string confirmSignUpWebAppUrl = string.Format("http://www.fullstack.co.uk/#/confirm-signup{0}", confirmSignUpRoute.Query);
 
             //string message = string.Format("{ type: 'AccountSignUp', data: { confirmSignUpWebAppUrl: '{0}' } }", confirmSignUpWebAppUrl); 
-            await this.AppUserManager.SendEmailAsync(user.Id, "Account SignUp", "Please confirm your account by clicking <a href=\"" + confirmSignUpWebAppUrl + "\">here</a>");
+            string message = string.Format("Please confirm your account by clicking <a href=\"{0}\">here</a>", confirmSignUpRoute);
+            await this.AppUserManager.SendEmailAsync(user.Id, "Account SignUp", message);
 
             Uri locationHeader = new Uri(Url.Link("GetUserById", new { id = user.Id }));
-            
+
             return Created(locationHeader, TheModelFactory.Create(user));
         }
 
@@ -60,12 +58,6 @@ namespace FullStack.WebAPI.Controllers
         [Route("confirm-signup", Name = "ConfirmSignUpRoute")]
         public async Task<IHttpActionResult> ConfirmSignUp(string userId = "", string code = "")
         {
-            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
-            {
-                ModelState.AddModelError("", "User Id and Code are required");
-                return BadRequest(ModelState);
-            }
-
             IdentityResult confirmEmailResult = await this.AppUserManager.ConfirmEmailAsync(userId, code);
 
             if (!confirmEmailResult.Succeeded)
@@ -73,24 +65,31 @@ namespace FullStack.WebAPI.Controllers
                 return GetErrorResult(confirmEmailResult);
             }
 
-            IdentityResult addToRolesResult = await this.AppUserManager.AddToRolesAsync(userId, new string[] { "User" });
+            IdentityResult addToRolesResult = await this.AppUserManager.AddToRolesAsync(userId, new string[] { "User", "Admin" });
 
             if (!addToRolesResult.Succeeded)
             {
                 ModelState.AddModelError("", "Failed to add user roles");
                 return BadRequest(ModelState);
             }
+
+            ApplicationUser user = await this.AppUserManager.FindByIdAsync(userId);
+
+            var tokenResult = this.AppUserManager.GenerateUserTokenAsync("GRANT-ACCESS", userId);
+            string token = tokenResult.Result;
+
+            Uri redirectLocation = new Uri(string.Format("http://www.fullstack.co.uk/#/confirm-signup?user={0}&token={1}", 
+                Uri.EscapeDataString(user.UserName), Uri.EscapeDataString(token)));
             
+            return Redirect(redirectLocation);
+
             //Uri locationHeader = new Uri(Url.Link("GetUserById", new { id = user.Id }));
-
             //return Created(locationHeader, TheModelFactory.Create(user));
-
-            return Ok();
         }
 
         [Authorize]
-        [Route("invite")]
         [HttpPost]
+        [Route("invite")]
         public async Task<IHttpActionResult> InviteUser(InviteUserBindingModel inviteUserModel)
         {
             if (!ModelState.IsValid)
@@ -160,6 +159,7 @@ namespace FullStack.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet]
         [Route("users")]
         public IHttpActionResult GetUsers()
         {
@@ -167,6 +167,7 @@ namespace FullStack.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet]
         [Route("user/{id:guid}", Name = "GetUserById")]
         public async Task<IHttpActionResult> GetUser(string Id)
         {
@@ -178,25 +179,25 @@ namespace FullStack.WebAPI.Controllers
             }
 
             return NotFound();
-
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet]
         [Route("user/{username}")]
         public async Task<IHttpActionResult> GetUserByName(string username)
         {
             var user = await this.AppUserManager.FindByNameAsync(username);
 
-            if (user != null)
+            if (user == null)
             {
-                return Ok(this.TheModelFactory.Create(user));
+                return NotFound();
             }
 
-            return NotFound();
-
+            return Ok(this.TheModelFactory.Create(user));
         }
 
         [Authorize]
+        [HttpPost]
         [Route("changePassword")]
         public async Task<IHttpActionResult> ChangePassword(ChangePasswordBindingModel model)
         {
@@ -216,35 +217,30 @@ namespace FullStack.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpDelete]
         [Route("user/{id:guid}")]
-        //[HttpDelete]
         public async Task<IHttpActionResult> DeleteUser(string id)
         {
+            var user = await this.AppUserManager.FindByIdAsync(id);
 
-            //Only SuperAdmin or Admin can delete users (Later when implement roles)
-
-            var appUser = await this.AppUserManager.FindByIdAsync(id);
-
-            if (appUser != null)
+            if (user == null)
             {
-                IdentityResult result = await this.AppUserManager.DeleteAsync(appUser);
-
-                if (!result.Succeeded)
-                {
-                    return GetErrorResult(result);
-                }
-
-                return Ok();
-
+                return NotFound();
             }
 
-            return NotFound();
+            IdentityResult result = await this.AppUserManager.DeleteAsync(user);
 
+            if (!result.Succeeded)
+            {
+                return GetErrorResult(result);
+            }
+
+            return Ok();
         }
 
         [Authorize(Roles = "Admin")]
-        [Route("user/{id:guid}/roles")]
         [HttpPut]
+        [Route("user/{id:guid}/roles")]
         public async Task<IHttpActionResult> AssignRolesToUser([FromUri] string id, [FromBody] string[] rolesToAssign)
         {
             var appUser = await this.AppUserManager.FindByIdAsync(id);
@@ -260,7 +256,6 @@ namespace FullStack.WebAPI.Controllers
 
             if (rolesNotExists.Count() > 0)
             {
-
                 ModelState.AddModelError("", string.Format("Roles '{0}' does not exixts in the system", string.Join(",", rolesNotExists)));
                 return BadRequest(ModelState);
             }

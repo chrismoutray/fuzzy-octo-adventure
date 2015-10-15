@@ -33,7 +33,7 @@ namespace FullStack.WebAPI.Infrastructure
                 {
                     //Code for email confirmation and reset password life time
                     TokenLifespan = TimeSpan.FromHours(hours)
-                };                
+                };
             }
 
             //Configure validation logic for usernames
@@ -41,8 +41,7 @@ namespace FullStack.WebAPI.Infrastructure
             appUserManager.UserValidator = new UserValidator<ApplicationUser>(appUserManager)
             {
                 AllowOnlyAlphanumericUserNames = true,
-                RequireUniqueEmail = true,
-                
+                RequireUniqueEmail = true
             };
 
             //Configure validation logic for passwords
@@ -53,8 +52,12 @@ namespace FullStack.WebAPI.Infrastructure
                 RequireNonLetterOrDigit = true,
                 RequireDigit = false,
                 RequireLowercase = true,
-                RequireUppercase = true,
+                RequireUppercase = true
             };
+
+#if DEBUG
+            appUserManager.PasswordValidator = new PasswordValidator { RequiredLength = 1 };
+#endif
 
             return appUserManager;
         }

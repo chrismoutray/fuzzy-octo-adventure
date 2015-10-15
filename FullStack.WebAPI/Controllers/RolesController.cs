@@ -19,13 +19,12 @@ namespace FullStack.WebAPI.Controllers
         {
             var role = await this.AppRoleManager.FindByIdAsync(Id);
 
-            if (role != null)
+            if (role == null)
             {
-                return Ok(TheModelFactory.Create(role));
+                return NotFound();
             }
 
-            return NotFound();
-
+            return Ok(TheModelFactory.Create(role));
         }
 
         [Route("", Name = "GetRoles")]
@@ -56,29 +55,26 @@ namespace FullStack.WebAPI.Controllers
             Uri locationHeader = new Uri(Url.Link("GetRoleById", new { id = role.Id }));
 
             return Created(locationHeader, TheModelFactory.Create(role));
-
         }
 
         [Route("{id:guid}")]
         public async Task<IHttpActionResult> DeleteRole(string Id)
         {
-
             var role = await this.AppRoleManager.FindByIdAsync(Id);
 
-            if (role != null)
+            if (role == null)
             {
-                IdentityResult result = await this.AppRoleManager.DeleteAsync(role);
-
-                if (!result.Succeeded)
-                {
-                    return GetErrorResult(result);
-                }
-
-                return Ok();
+                return NotFound();
             }
 
-            return NotFound();
+            IdentityResult result = await this.AppRoleManager.DeleteAsync(role);
 
+            if (!result.Succeeded)
+            {
+                return GetErrorResult(result);
+            }
+
+            return Ok();
         }
 
         [Route("ManageUsersInRole")]
@@ -110,7 +106,6 @@ namespace FullStack.WebAPI.Controllers
                     {
                         ModelState.AddModelError("", String.Format("User: {0} could not be added to role", user));
                     }
-
                 }
             }
 

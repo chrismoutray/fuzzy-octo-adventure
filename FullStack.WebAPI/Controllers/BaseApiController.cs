@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Web.Http;
 using FullStack.WebAPI.Infrastructure;
 using FullStack.WebAPI.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
-using Microsoft.Owin.Host;
+using Microsoft.Owin;
+using Microsoft.Owin.Security;
 
 namespace FullStack.WebAPI.Controllers
 {
@@ -17,15 +15,14 @@ namespace FullStack.WebAPI.Controllers
         private ModelFactory _modelFactory;
         private ApplicationUserManager _AppUserManager = null;
         private ApplicationRoleManager _AppRoleManager = null;
+        private IAuthenticationManager _Authentication = null;
 
         protected ModelFactory TheModelFactory
         {
             get
             {
                 if (_modelFactory == null)
-                {
                     _modelFactory = new ModelFactory(this.Request, this.AppUserManager);
-                }
                 return _modelFactory;
             }
         }
@@ -35,9 +32,7 @@ namespace FullStack.WebAPI.Controllers
             get
             {
                 if (_AppUserManager == null)
-                {
                     _AppUserManager = Request.GetOwinContext().GetUserManager<ApplicationUserManager>();
-                }
                 return _AppUserManager;
             }
         }
@@ -47,10 +42,26 @@ namespace FullStack.WebAPI.Controllers
             get
             {
                 if (_AppRoleManager == null)
-                {
                     _AppRoleManager = Request.GetOwinContext().GetUserManager<ApplicationRoleManager>();
-                }
                 return _AppRoleManager;
+            }
+        }
+        
+        protected IOwinContext OwinContext
+        {
+            get
+            {
+                return Request.GetOwinContext();
+            }
+        }
+
+        protected IAuthenticationManager Authentication
+        {
+            get
+            {
+                if (_Authentication == null)
+                    _Authentication = Request.GetOwinContext().Authentication;
+                return _Authentication;
             }
         }
 
@@ -61,30 +72,26 @@ namespace FullStack.WebAPI.Controllers
         protected IHttpActionResult GetErrorResult(IdentityResult result)
         {
             if (result == null)
-            {
                 return InternalServerError();
-            }
 
-            if (!result.Succeeded)
+            if (result.Succeeded)
+                return null;
+        
+            if (result.Errors != null)
             {
-                if (result.Errors != null)
+                foreach (string error in result.Errors)
                 {
-                    foreach (string error in result.Errors)
-                    {
-                        ModelState.AddModelError(string.Empty, error);
-                    }
+                    ModelState.AddModelError(string.Empty, error);
                 }
-
-                if (ModelState.IsValid)
-                {
-                    // No ModelState errors are available to send, so just return an empty BadRequest.
-                    return BadRequest();
-                }
-
-                return BadRequest(ModelState);
             }
 
-            return null;
+            if (ModelState.IsValid)
+            {
+                // No ModelState errors are available to send, so just return an empty BadRequest.
+                return BadRequest();
+            }
+
+            return BadRequest(ModelState);
         }
     }
 }

@@ -8,6 +8,7 @@ using System.Web.Http;
 using FullStack.WebAPI.Infrastructure;
 using FullStack.WebAPI.Providers;
 using Microsoft.Owin;
+using Microsoft.Owin.Cors;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.DataHandler.Encoder;
 using Microsoft.Owin.Security.Jwt;
@@ -23,7 +24,6 @@ namespace FullStack.WebAPI
         {
             // var audience = AudiencesStore.AddAudience("FullStack.WebAPI");
 
-
             HttpConfiguration httpConfig = new HttpConfiguration();
 
             ConfigureOAuthTokenGeneration(app);
@@ -32,13 +32,15 @@ namespace FullStack.WebAPI
 
             ConfigureWebApi(httpConfig);
 
-            app.UseCors(Microsoft.Owin.Cors.CorsOptions.AllowAll);
+            app.UseCors(CorsOptions.AllowAll); // not recommended so implement ICorsPolicyProvider 
 
             app.UseWebApi(httpConfig);
         }
 
         private void ConfigureOAuthTokenGeneration(IAppBuilder app)
         {
+            string issuer = ConfigurationManager.AppSettings["as:IssuerDomain"];
+
             // Configure the db context and user manager to use a single instance per request
             app.CreatePerOwinContext(ApplicationDbContext.Create);
             app.CreatePerOwinContext<ApplicationUserManager>(ApplicationUserManager.Create);
@@ -51,7 +53,7 @@ namespace FullStack.WebAPI
                 TokenEndpointPath = new PathString("/oauth/token"),
                 AccessTokenExpireTimeSpan = TimeSpan.FromDays(1),
                 Provider = new CustomOAuthProvider(),
-                AccessTokenFormat = new CustomJwtFormat("http://localhost:49566")
+                AccessTokenFormat = new CustomJwtFormat(issuer)
             };
 
 #if DEBUG
@@ -65,8 +67,7 @@ namespace FullStack.WebAPI
 
         private void ConfigureOAuthTokenConsumption(IAppBuilder app)
         {
-
-            var issuer = "http://localhost:49566";
+            string issuer = ConfigurationManager.AppSettings["as:IssuerDomain"];
             string audienceId = ConfigurationManager.AppSettings["as:AudienceId"];
             byte[] audienceSecret = TextEncodings.Base64Url.Decode(ConfigurationManager.AppSettings["as:AudienceSecret"]);
 

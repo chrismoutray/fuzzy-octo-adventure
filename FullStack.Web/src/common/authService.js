@@ -21,9 +21,15 @@ angular.module('ngBoilerplate')
                 });
         };
 
+        var _encodeURIComponent = function (str) {
+            return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+                return '%' + c.charCodeAt(0).toString(16);
+            });
+        };
+
         var _login = function (loginData) {
 
-            var data = "grant_type=password&username=" + loginData.username + "&password=" + loginData.password;
+            var data = "grant_type=password&username=" + _encodeURIComponent(loginData.username) + "&password=" + _encodeURIComponent(loginData.password);
 
             var deferred = $q.defer();
 

@@ -27,19 +27,15 @@ angular.module('ngBoilerplate.users', [
 
         var _deleteUser = function (user) {
 
-            var req = {
-                method: 'DELETE',
-                url: CONSTANTS.BASE_API_URL + 'api/accounts/user/' + user.id
-            };
-
-            //
-            //$http(req)
             $http['delete'](CONSTANTS.BASE_API_URL + 'api/accounts/user/' + user.id)
                 .then(function (results) {
-                    return results.data;
+                    //return results.data;
                 })
                 .catch(function (ex) {
                     console.log(ex);
+                })
+                .finally(function () {
+                    return _getUsers();
                 });
         };
 

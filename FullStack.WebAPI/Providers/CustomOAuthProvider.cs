@@ -19,6 +19,8 @@ namespace FullStack.WebAPI.Providers
     {
         public override Task ValidateClientAuthentication(OAuthValidateClientAuthenticationContext context)
         {
+            // http://bitoftech.net/2014/10/27/json-web-token-asp-net-web-api-2-jwt-owin-authorization-server/
+            // look at step 1.5
             context.Validated();
             return Task.FromResult<object>(null);
         }
@@ -35,14 +37,22 @@ namespace FullStack.WebAPI.Providers
 
             if (user == null)
             {
-                ApplicationUser user1 = await userManager.FindByNameAsync(context.UserName);
+                user = await userManager.FindByNameAsync(context.UserName);
 
-                if (user1 != null)
-                    context.SetError("invalid_grant", "The user was found but the password was incorrect.");
-                else
+                if (user == null)
+                {
                     context.SetError("invalid_grant", "The user name or password is incorrect.");
+                    return;
+                }
+
+                string token = context.Password;
+                bool result = await userManager.VerifyUserTokenAsync(user.Id, "TEMP-ACCESS", token);
                 
-                return;
+                if (result == false)
+                {
+                    context.SetError("invalid_grant", "The user was found but the password was incorrect.");
+                    return;
+                }
             }
 
             if (!user.EmailConfirmed)
@@ -52,6 +62,8 @@ namespace FullStack.WebAPI.Providers
             }
 
             ClaimsIdentity oAuthIdentity = await user.GenerateUserIdentityAsync(userManager, "JWT");
+
+            // http://stackoverflow.com/questions/25239566/pass-back-parameters-in-asp-net-web-api-grantresourceownercredentials
 
             var ticket = new AuthenticationTicket(oAuthIdentity, null);
 

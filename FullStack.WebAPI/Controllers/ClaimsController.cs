@@ -27,6 +27,5 @@ namespace FullStack.WebAPI.Controllers
 
             return Ok(claims);
         }
-
     }
 }
